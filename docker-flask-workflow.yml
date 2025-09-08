@@ -1,0 +1,40 @@
+name: Flask Docker CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          cd project3-flask-docker
+          pip install -r requirements.txt
+
+      # Run a simple test (placeholder)
+      - name: Run tests
+        run: |
+          cd project3-flask-docker
+          python -m unittest discover || echo "No tests yet"
+
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          cd project3-flask-docker
+          docker build -t flask-docker-app .

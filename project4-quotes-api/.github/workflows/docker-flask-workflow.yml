@@ -1,0 +1,30 @@
+name: Docker Flask Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        run: docker build -t quotes-api .
+
+      - name: Run container
+        run: docker run -d -p 5000:5000 --name quotes-api-test quotes-api
+
+      - name: Test endpoint
+        run: |
+          sleep 5
+          curl http://localhost:5000/api/quote
+
+      - name: Stop container
+        run: docker stop quotes-api-test

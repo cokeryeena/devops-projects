@@ -1,0 +1,38 @@
+name: CI/CD Pipeline - GitHub Actions
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t mydockerhubuser/myflaskapp:latest .
+
+      - name: Push to DockerHub
+        run: docker push mydockerhubuser/myflaskapp:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull mydockerhubuser/myflaskapp:latest
+            docker stop flaskapp || true
+            docker rm flaskapp || true
+            docker run -d -p 80:5000 --name flaskapp mydockerhubuser/myflaskapp:latest
